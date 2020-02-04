@@ -169,28 +169,24 @@ public class Client implements Runnable {
   // Helper Method For Run Method
   private void sending() {
     for (int i = 0; i < getNumberOfTransactions(); i++) {
-      while (network.getInBufferStatus().equals("full")) {
-        Thread.yield();
-      }
       if (transactions[i] != null) {
         network.send(transactions[i]);
         System.out.println("Transaction #" + i + " was sent");
       }
     }
+    network.disconnect(network.getClientIP());
   }
 
   // Helper Method For Run Method
   private void receiving() {
-    for (int i = 0; i < getNumberOfTransactions(); i++) {
-      while (network.getOutBufferStatus().equals("empty")) {
-        Thread.yield();
-      }
+    for (int i = 0; i < getNumberOfTransactions() - 1; i++) {
       if (transactions[i] != null) {
         network.receive(transactions[i]);
         System.out.println("Transaction #" + i + " was received");
         // System.out.println(transactions[i].toString());
       }
     }
+    network.disconnect(network.getClientIP());
   }
 
   /**

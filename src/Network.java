@@ -485,9 +485,12 @@ public class Network implements Runnable {
    * @return
    */
   public void run() {
-    // Keep listening
-    while (true) {
+    long time = System.currentTimeMillis();
+
+    while (!serverConnectionStatus.equals("disconnected") && !clientConnectionStatus.equals("disconnected")) {
       Thread.yield();
     }
+
+    System.out.println("\nTerminating network thread - " + " Running time " + (System.currentTimeMillis() - time) + " ms");
   }
 }

@@ -148,7 +148,7 @@ public class Server implements Runnable {
     int i = 0;
 
     /* Find account */
-    while (!(account[i].getAccountNumber().equals(accNumber)))
+    while (account != null && account[i] != null && !(account[i].getAccountNumber().equals(accNumber)))
       i++;
     if (i == getNumberOfAccounts())
       return -1;
@@ -274,6 +274,8 @@ public class Server implements Runnable {
     long time = System.currentTimeMillis();
 
     processTransactions(transaction);
+
+    network.disconnect(network.getServerIP());
 
     System.out.println("\nTerminating server thread - " + " Running time " + (System.currentTimeMillis() - time) + " ms");
   }
