@@ -177,33 +177,30 @@ public class Server implements Runnable {
 
         accIndex = findAccount(trans.getAccountNumber());
         /* Process deposit operation */
-        if (trans.getOperationType().equals("DEPOSIT")) {
-          newBalance = deposit(accIndex, trans.getTransactionAmount());
-          trans.setTransactionBalance(newBalance);
-          trans.setTransactionStatus("done");
-
-          // System.out.println("\nDEBUG : Server.processTransactions() - Deposit of " + trans.getTransactionAmount() + " in account " + trans.getAccountNumber());
-        } else
-          /* Process withdraw operation */
-          if (trans.getOperationType().equals("WITHDRAW")) {
+        switch (trans.getOperationType()) {
+          case "DEPOSIT":
+            newBalance = deposit(accIndex, trans.getTransactionAmount());
+            trans.setTransactionBalance(newBalance);
+            trans.setTransactionStatus("done");
+            // System.out.println("\nDEBUG : Server.processTransactions() - Deposit of " + trans.getTransactionAmount() + " in account " + trans.getAccountNumber());
+            break;
+          case "WITHDRAW":
             newBalance = withdraw(accIndex, trans.getTransactionAmount());
             trans.setTransactionBalance(newBalance);
             trans.setTransactionStatus("done");
-
             // System.out.println("\nDEBUG : Server.processTransactions() - Withdrawal of " + trans.getTransactionAmount() + " from account " + trans.getAccountNumber());
-          } else
-            /* Process query operation */
-            if (trans.getOperationType().equals("QUERY")) {
-              newBalance = query(accIndex);
-              trans.setTransactionBalance(newBalance);
-              trans.setTransactionStatus("done");
+            break;
+          case "QUERY":
+            newBalance = query(accIndex);
+            trans.setTransactionBalance(newBalance);
+            trans.setTransactionStatus("done");
+            // System.out.println("\nDEBUG : Server.processTransactions() - Obtaining balance from account" + trans.getAccountNumber());
+            break;
+        }
 
-              // System.out.println("\nDEBUG : Server.processTransactions() - Obtaining balance from account" + trans.getAccountNumber());
-            }
+         while((network.getOutBufferStatus().equals("full"))); /* Alternatively,  busy-wait until the network output buffer is available */
 
-        // while( (network.getOutBufferStatus().equals("full"))); /* Alternatively,  busy-wait until the network output buffer is available */
-
-        // System.out.println("\nDEBUG : Server.processTransactions() - transferring out account " + trans.getAccountNumber());
+         // System.out.println("\nDEBUG : Server.processTransactions() - transferring out account " + trans.getAccountNumber());
 
         network.transferOut(trans);                                /* Transfer a completed transaction from the server to the network output buffer */
         setNumberOfTransactions((getNumberOfTransactions() + 1));  /* Count the number of transactions processed */
@@ -276,7 +273,7 @@ public class Server implements Runnable {
   public void run() {
     long time = System.currentTimeMillis();
 
-    // TODO Implement the code for the run method
+    processTransactions(transaction);
 
     System.out.println("\nTerminating server thread - " + " Running time " + (System.currentTimeMillis() - time) + " ms");
   }

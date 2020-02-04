@@ -487,13 +487,7 @@ public class Network implements Runnable {
   public void run() {
     // Keep listening
     while (true) {
-      // TODO Implement the code for the run method
-      // If nothing is in the buffer then yield
-      while (getInBufferStatus().equals("empty") && getOutBufferStatus().equals("empty")) {
-        Thread.yield();
-      }
-      transferIn(incomingPackets[0]);
-      System.out.println("Transferred Packet");
+      Thread.yield();
     }
   }
 }
