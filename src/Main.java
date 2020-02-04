@@ -12,7 +12,8 @@ public class Main {
 
     // TODO : implement all the operations of main class
 
-    Thread network = new Thread(new Network("network"));          /* Activate the network */
+    // Initialize all the threads
+    Thread network = new Thread(new Network("network"));           /* Activate the network */
     network.start();
     Thread server = new Thread(new Server());                             /* Start the server */
     server.start();

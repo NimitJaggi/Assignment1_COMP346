@@ -12,8 +12,8 @@ public class Network implements Runnable {
   private static int portID;                                 /* Port ID of the client application */
   private static String clientConnectionStatus;              /* Client connection status - connected, disconnected, idle */
   private static String serverConnectionStatus;              /* Server connection status - connected, disconnected, idle */
-  private static Transaction inComingPacket[];              /* Incoming network buffer */
-  private static Transaction outGoingPacket[];              /* Outgoing network buffer */
+  private static Transaction incomingPackets[];              /* Incoming network buffer */
+  private static Transaction outgoingPackets[];              /* Outgoing network buffer */
   private static String inBufferStatus, outBufferStatus;     /* Current status of the network buffers - normal, full, empty */
   private static String networkStatus;                       /* Network status - active, inactive */
 
@@ -35,11 +35,11 @@ public class Network implements Runnable {
       serverConnectionStatus = "idle";
       portID = 0;
       maxNbPackets = 10;
-      inComingPacket = new Transaction[maxNbPackets];
-      outGoingPacket = new Transaction[maxNbPackets];
+      incomingPackets = new Transaction[maxNbPackets];
+      outgoingPackets = new Transaction[maxNbPackets];
       for (i = 0; i < maxNbPackets; i++) {
-        inComingPacket[i] = new Transaction();
-        outGoingPacket[i] = new Transaction();
+        incomingPackets[i] = new Transaction();
+        outgoingPackets[i] = new Transaction();
       }
       inBufferStatus = "empty";
       outBufferStatus = "empty";
@@ -218,7 +218,7 @@ public class Network implements Runnable {
    * @param
    * @return inputIndexClient
    */
-  public int getinputIndexClient() {
+  public int getInputIndexClient() {
     return inputIndexClient;
   }
 
@@ -228,7 +228,7 @@ public class Network implements Runnable {
    * @param i1
    * @return
    */
-  public void setinputIndexClient(int i1) {
+  public void setInputIndexClient(int i1) {
     inputIndexClient = i1;
   }
 
@@ -238,7 +238,7 @@ public class Network implements Runnable {
    * @param
    * @return inputIndexServer
    */
-  public int getinputIndexServer() {
+  public int getInputIndexServer() {
     return inputIndexServer;
   }
 
@@ -248,7 +248,7 @@ public class Network implements Runnable {
    * @param i2
    * @return
    */
-  public void setinputIndexServer(int i2) {
+  public void setInputIndexServer(int i2) {
     inputIndexServer = i2;
   }
 
@@ -258,7 +258,7 @@ public class Network implements Runnable {
    * @param
    * @return outputIndexServer
    */
-  public int getoutputIndexServer() {
+  public int getOutputIndexServer() {
     return outputIndexServer;
   }
 
@@ -268,7 +268,7 @@ public class Network implements Runnable {
    * @param o1
    * @return
    */
-  public void setoutputIndexServer(int o1) {
+  public void setOutputIndexServer(int o1) {
     outputIndexServer = o1;
   }
 
@@ -278,7 +278,7 @@ public class Network implements Runnable {
    * @param
    * @return outputIndexClient
    */
-  public int getoutputIndexClient() {
+  public int getOutputIndexClient() {
     return outputIndexClient;
   }
 
@@ -288,7 +288,7 @@ public class Network implements Runnable {
    * @param o2
    * @return
    */
-  public void setoutputIndexClient(int o2) {
+  public void setOutputIndexClient(int o2) {
     outputIndexClient = o2;
   }
 
@@ -319,20 +319,20 @@ public class Network implements Runnable {
    * @return
    */
   public boolean send(Transaction inPacket) {
-    inComingPacket[inputIndexClient].setAccountNumber(inPacket.getAccountNumber());
-    inComingPacket[inputIndexClient].setOperationType(inPacket.getOperationType());
-    inComingPacket[inputIndexClient].setTransactionAmount(inPacket.getTransactionAmount());
-    inComingPacket[inputIndexClient].setTransactionBalance(inPacket.getTransactionBalance());
-    inComingPacket[inputIndexClient].setTransactionError(inPacket.getTransactionError());
-    inComingPacket[inputIndexClient].setTransactionStatus("transferred");
+    incomingPackets[inputIndexClient].setAccountNumber(inPacket.getAccountNumber());
+    incomingPackets[inputIndexClient].setOperationType(inPacket.getOperationType());
+    incomingPackets[inputIndexClient].setTransactionAmount(inPacket.getTransactionAmount());
+    incomingPackets[inputIndexClient].setTransactionBalance(inPacket.getTransactionBalance());
+    incomingPackets[inputIndexClient].setTransactionError(inPacket.getTransactionError());
+    incomingPackets[inputIndexClient].setTransactionStatus("transferred");
 
     // System.out.println("\nDEBUG : Network.send() - index inputIndexClient " + inputIndexClient);
     // System.out.println("\nDEBUG : Network.send() - account number " + inComingPacket[inputIndexClient].getAccountNumber());
 
 
-    setinputIndexClient(((getinputIndexClient() + 1) % getMaxNbPackets()));  /* Increment the input buffer index  for the client */
+    setInputIndexClient(((getInputIndexClient() + 1) % getMaxNbPackets()));  /* Increment the input buffer index  for the client */
     /* Check if input buffer is full */
-    if (getinputIndexClient() == getoutputIndexServer()) {
+    if (getInputIndexClient() == getOutputIndexServer()) {
       setInBufferStatus("full");
 
       // System.out.println("\nDEBUG : Network.send() - inComingBuffer status " + getInBufferStatus());
@@ -349,19 +349,19 @@ public class Network implements Runnable {
    * @return
    */
   public boolean receive(Transaction outPacket) {
-    outPacket.setAccountNumber(outGoingPacket[outputIndexClient].getAccountNumber());
-    outPacket.setOperationType(outGoingPacket[outputIndexClient].getOperationType());
-    outPacket.setTransactionAmount(outGoingPacket[outputIndexClient].getTransactionAmount());
-    outPacket.setTransactionBalance(outGoingPacket[outputIndexClient].getTransactionBalance());
-    outPacket.setTransactionError(outGoingPacket[outputIndexClient].getTransactionError());
+    outPacket.setAccountNumber(outgoingPackets[outputIndexClient].getAccountNumber());
+    outPacket.setOperationType(outgoingPackets[outputIndexClient].getOperationType());
+    outPacket.setTransactionAmount(outgoingPackets[outputIndexClient].getTransactionAmount());
+    outPacket.setTransactionBalance(outgoingPackets[outputIndexClient].getTransactionBalance());
+    outPacket.setTransactionError(outgoingPackets[outputIndexClient].getTransactionError());
     outPacket.setTransactionStatus("done");
 
     // System.out.println("\nDEBUG : Network.receive() - index outputIndexClient " + outputIndexClient);
     // System.out.println("\nDEBUG : Network.receive() - account number " + outPacket.getAccountNumber());
 
-    setoutputIndexClient(((getoutputIndexClient() + 1) % getMaxNbPackets())); /* Increment the output buffer index for the client */
+    setOutputIndexClient(((getOutputIndexClient() + 1) % getMaxNbPackets())); /* Increment the output buffer index for the client */
     /* Check if output buffer is empty */
-    if (getoutputIndexClient() == getinputIndexServer()) {
+    if (getOutputIndexClient() == getInputIndexServer()) {
       setOutBufferStatus("empty");
 
       // System.out.println("\nDEBUG : Network.receive() - outGoingBuffer status " + getOutBufferStatus());
@@ -378,19 +378,19 @@ public class Network implements Runnable {
    * @return
    */
   public boolean transferOut(Transaction outPacket) {
-    outGoingPacket[inputIndexServer].setAccountNumber(outPacket.getAccountNumber());
-    outGoingPacket[inputIndexServer].setOperationType(outPacket.getOperationType());
-    outGoingPacket[inputIndexServer].setTransactionAmount(outPacket.getTransactionAmount());
-    outGoingPacket[inputIndexServer].setTransactionBalance(outPacket.getTransactionBalance());
-    outGoingPacket[inputIndexServer].setTransactionError(outPacket.getTransactionError());
-    outGoingPacket[inputIndexServer].setTransactionStatus("transferred");
+    outgoingPackets[inputIndexServer].setAccountNumber(outPacket.getAccountNumber());
+    outgoingPackets[inputIndexServer].setOperationType(outPacket.getOperationType());
+    outgoingPackets[inputIndexServer].setTransactionAmount(outPacket.getTransactionAmount());
+    outgoingPackets[inputIndexServer].setTransactionBalance(outPacket.getTransactionBalance());
+    outgoingPackets[inputIndexServer].setTransactionError(outPacket.getTransactionError());
+    outgoingPackets[inputIndexServer].setTransactionStatus("transferred");
 
     // System.out.println("\nDEBUG : Network.transferOut() - index inputIndexServer " + inputIndexServer);
     // System.out.println("\nDEBUG : Network.transferOut() - account number " + outGoingPacket[inputIndexServer].getAccountNumber());
 
-    setinputIndexServer(((getinputIndexServer() + 1) % getMaxNbPackets())); /* Increment the output buffer index for the server */
+    setInputIndexServer(((getInputIndexServer() + 1) % getMaxNbPackets())); /* Increment the output buffer index for the server */
     /* Check if output buffer is full */
-    if (getinputIndexServer() == getoutputIndexClient()) {
+    if (getInputIndexServer() == getOutputIndexClient()) {
       setOutBufferStatus("full");
 
       // System.out.println("\nDEBUG : Network.transferOut() - outGoingBuffer status " + getOutBufferStatus());
@@ -408,19 +408,19 @@ public class Network implements Runnable {
    */
   public boolean transferIn(Transaction inPacket) {
     // System.out.println("\nDEBUG : Network.transferIn - account number " + inComingPacket[outputIndexServer].getAccountNumber());
-    inPacket.setAccountNumber(inComingPacket[outputIndexServer].getAccountNumber());
-    inPacket.setOperationType(inComingPacket[outputIndexServer].getOperationType());
-    inPacket.setTransactionAmount(inComingPacket[outputIndexServer].getTransactionAmount());
-    inPacket.setTransactionBalance(inComingPacket[outputIndexServer].getTransactionBalance());
-    inPacket.setTransactionError(inComingPacket[outputIndexServer].getTransactionError());
+    inPacket.setAccountNumber(incomingPackets[outputIndexServer].getAccountNumber());
+    inPacket.setOperationType(incomingPackets[outputIndexServer].getOperationType());
+    inPacket.setTransactionAmount(incomingPackets[outputIndexServer].getTransactionAmount());
+    inPacket.setTransactionBalance(incomingPackets[outputIndexServer].getTransactionBalance());
+    inPacket.setTransactionError(incomingPackets[outputIndexServer].getTransactionError());
     inPacket.setTransactionStatus("received");
 
     // System.out.println("\nDEBUG : Network.transferIn() - index outputIndexServer " + outputIndexServer);
     // System.out.println("\nDEBUG : Network.transferIn() - account number " + inPacket.getAccountNumber());
 
-    setoutputIndexServer(((getoutputIndexServer() + 1) % getMaxNbPackets()));  /* Increment the input buffer index for the server */
+    setOutputIndexServer(((getOutputIndexServer() + 1) % getMaxNbPackets()));  /* Increment the input buffer index for the server */
     /* Check if input buffer is empty */
-    if (getoutputIndexServer() == getinputIndexClient()) {
+    if (getOutputIndexServer() == getInputIndexClient()) {
       setInBufferStatus("empty");
 
       // System.out.println("\nDEBUG : Network.transferIn() - inComingBuffer status " + getInBufferStatus());
@@ -485,10 +485,15 @@ public class Network implements Runnable {
    * @return
    */
   public void run() {
-
-    // while (true) {
-    //   // TODO Implement the code for the run method
-    // }
-
+    // Keep listening
+    while (true) {
+      // TODO Implement the code for the run method
+      // If nothing is in the buffer then yield
+      while (getInBufferStatus().equals("empty") && getOutBufferStatus().equals("empty")) {
+        Thread.yield();
+      }
+      transferIn(incomingPackets[0]);
+      System.out.println("Transferred Packet");
+    }
   }
 }

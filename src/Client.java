@@ -24,14 +24,17 @@ public class Client implements Runnable {
    */
   public Client(String operation) {
     if (operation.equals("sending")) {
+      // Initialize Client Sending
       System.out.println("\nInitializing client sending application ...");
+      clientOperation = operation;
+      // Get transactions
+      System.out.println("\nInitializing the transactions ... ");
       maxNbTransactions = 100;
       transactions = new Transaction[maxNbTransactions];
-      network = new Network("client");
-      clientOperation = operation;
-      System.out.println("\nInitializing the transactions ... ");
       readTransactions();
+      // Connect to Network
       System.out.println("\nConnecting client to network ...");
+      network = new Network("client");
       String cip = network.getClientIP();
       if (!(network.connect(cip))) {
         System.out.println("\nTerminating client application, network unavailable");
@@ -102,7 +105,6 @@ public class Client implements Runnable {
         System.out.println("Line " + i + "file transactions.txt invalid input");
         System.exit(0);
       }
-
     }
 
     // System.out.println("\nDEBUG : Client.readTransactions() - " + getNumberOfTransactions() + " transactions processed");
@@ -161,7 +163,23 @@ public class Client implements Runnable {
    * @return String representation
    */
   public String toString() {
-    return ("\nclient IP " + network.getClientIP() + " Connection status" + network.getClientConnectionStatus() + "Number of transactions " + getNumberOfTransactions());
+    return ("client IP " + network.getClientIP() + " Connection status" + network.getClientConnectionStatus() + "Number of transactions " + getNumberOfTransactions());
+  }
+
+  private void sending() {
+    for (int i = 0; i < getNumberOfTransactions(); i++) {
+      while (network.getInBufferStatus().equals("full")) {
+        Thread.yield();
+      }
+      if (transactions[i] != null) {
+        System.out.println("Transaction #" + i + " was sent");
+        network.send(transactions[i]);
+      }
+    }
+  }
+
+  private void receiving() {
+    // TODO Receiving
   }
 
   /**
@@ -174,6 +192,14 @@ public class Client implements Runnable {
     long time = System.currentTimeMillis();
 
     // TODO Implement the code for the run method
+    if (getClientOperation().equals("sending")) {
+      sending();
+    } else if (getClientOperation().equals("receiving")) {
+      receiving();
+    } else {
+      System.out.println("ERROR: Wrong client operation type!");
+      System.exit(1);
+    }
 
     System.out.println("\nTerminating " + clientOperation + " client thread - " + " Running time " + (System.currentTimeMillis() - time) + " ms");
   }
