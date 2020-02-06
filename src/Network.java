@@ -487,7 +487,10 @@ public class Network implements Runnable {
   public void run() {
     long time = System.currentTimeMillis();
 
-    while (!serverConnectionStatus.equals("disconnected") && !clientConnectionStatus.equals("disconnected")) {
+    while (
+      !getServerConnectionStatus().equals("disconnected") &&
+      !getClientConnectionStatus().equals("disconnected")
+    ) {
       Thread.yield();
     }
 

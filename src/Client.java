@@ -11,8 +11,9 @@ import java.util.InputMismatchException;
 
 public class Client implements Runnable {
 
+  private static int numberOfTransactions;      /* Number of transactions to process */
   private static int maxNbTransactions;         /* Maximum number of transactions */
-  private static Transaction[] transactions;   /* Transactions to be processed */
+  private static Transaction[] transactions;    /* Transactions to be processed */
   private static Network network;               /* Client object to handle network operations */
   private String clientOperation;               /* sending or receiving */
 
@@ -29,6 +30,7 @@ public class Client implements Runnable {
       clientOperation = operation;
       // Get transactions
       System.out.println("\nInitializing the transactions ... ");
+      numberOfTransactions = 0;
       maxNbTransactions = 100;
       transactions = new Transaction[maxNbTransactions];
       readTransactions();
@@ -53,7 +55,18 @@ public class Client implements Runnable {
    * @return numberOfTransactions
    */
   public int getNumberOfTransactions() {
-    return transactions.length;
+    return numberOfTransactions;
+  }
+
+  /**
+   * Mutator method of Client class
+   *
+   * @return
+   * @param nbOfTrans
+   */
+  public void setNumberOfTransactions(int nbOfTrans)
+  {
+    numberOfTransactions = nbOfTrans;
   }
 
   /**
@@ -101,6 +114,7 @@ public class Client implements Runnable {
         transactions[i].setTransactionAmount(inputStream.nextDouble());  /* Read transaction amount */
         transactions[i].setTransactionStatus("pending");                 /* Set current transaction status */
         i++;
+        setNumberOfTransactions(i);
       } catch (InputMismatchException e) {
         System.out.println("Line " + i + "file transactions.txt invalid input");
         System.exit(0);
@@ -123,13 +137,10 @@ public class Client implements Runnable {
     int i = 0;     /* index of transaction array */
 
     while (i < getNumberOfTransactions()) {
-      // while( network.getInBufferStatus().equals("full") );     /* Alternatively, busy-wait until the network input buffer is available */
-
-      transactions[i].setTransactionStatus("sent");   /* Set current transaction status */
-
-      // System.out.println("\nDEBUG : Client.sendTransactions() - sending transaction on account " + transaction[i].getAccountNumber());
-
+      while(network.getInBufferStatus().equals("full"))     /* Alternatively, busy-wait until the network input buffer is available */
+        Thread.yield();
       network.send(transactions[i]);    /* Transmit current transaction */
+      transactions[i].setTransactionStatus("sent");   /* Set current transaction status */
       i++;
     }
 
@@ -145,12 +156,9 @@ public class Client implements Runnable {
     int i = 0;     /* Index of transaction array */
 
     while (i < getNumberOfTransactions()) {
-      // while( network.getOutBufferStatus().equals("empty"));  	/* Alternatively, busy-wait until the network output buffer is available */
-
+      while( network.getOutBufferStatus().equals("empty"))  	/* Alternatively, busy-wait until the network output buffer is available */
+        Thread.yield();
       network.receive(transact);                                /* Receive updated transaction from the network buffer */
-
-      // System.out.println("\nDEBUG : Client.receiveTransactions() - receiving updated transaction on account " + transact.getAccountNumber());
-
       System.out.println(transact);                                /* Display updated transaction */
       i++;
     }
@@ -166,33 +174,6 @@ public class Client implements Runnable {
     return ("client IP " + network.getClientIP() + " Connection status" + network.getClientConnectionStatus() + "Number of transactions " + getNumberOfTransactions());
   }
 
-  // Helper Method For Run Method
-  private void sending() {
-    for (int i = 0; i < getNumberOfTransactions(); i++) {
-      while (network.getInBufferStatus().equals("full")) {
-        Thread.yield();
-      }
-      if (transactions[i] != null) {
-        network.send(transactions[i]);
-      }
-    }
-    network.disconnect(network.getClientIP());
-  }
-
-  // Helper Method For Run Method
-  private void receiving() {
-    for (int i = 0; i < getNumberOfTransactions() - 1; i++) {
-      while (network.getOutBufferStatus().equals("empty")) {
-        Thread.yield();
-      }
-      if (transactions[i] != null) {
-        network.receive(transactions[i]);
-         System.out.println(transactions[i].toString());
-      }
-    }
-    network.disconnect(network.getClientIP());
-  }
-
   /**
    * Code for the run method
    *
@@ -203,9 +184,11 @@ public class Client implements Runnable {
     long time = System.currentTimeMillis();
 
     if (getClientOperation().equals("sending")) {
-      sending();
+      sendTransactions();
     } else if (getClientOperation().equals("receiving")) {
-      receiving();
+      Transaction dummy = new Transaction();
+      receiveTransactions(dummy);
+      network.disconnect(network.getClientIP());
     } else {
       System.out.println("ERROR: Wrong client operation type!");
       System.exit(1);
