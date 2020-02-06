@@ -183,6 +183,9 @@ public class Client implements Runnable {
   public void run() {
     long time = System.currentTimeMillis();
 
+    while(!network.getServerConnectionStatus().equals("connected"))
+      Thread.yield();
+
     if (getClientOperation().equals("sending")) {
       sendTransactions();
     } else if (getClientOperation().equals("receiving")) {
